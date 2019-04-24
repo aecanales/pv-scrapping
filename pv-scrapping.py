@@ -5,6 +5,8 @@
 import urllib
 import bs4
 import re
+import os
+import subprocess
 
 WEBSITE = 'http://catalinacortazar.com/PensamientoVisual/?cat='
 
@@ -19,15 +21,20 @@ soup =  bs4.BeautifulSoup(html_page, features='html5lib')
 
 print("Recopilando enlaces...")
 
-# Esto retorna todos los enlaces en la página.
 links = []
 for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
     links.append(link.get('href'))
 
-# Probalemente podria realizar el filtro en etapa previa pero no entiendo bien como funciona findAll :c
+# Probalemente podria realizar el filtro en el comando previo pero no entiendo bien como funciona findAll :c
 print("Filtrando enlaces...")
 
 links = [link for link in links if 'upload' in link]
 
-for link in links:
-    print(link)
+print(f"{len(links)} archivos encontrados. Descargando...")
+
+with open(os.devnull, 'w') as devnull:
+    for link in links[0:1]:
+        print(f" {link}")
+        subprocess.run(['wget', link], stdout=devnull, stderr=devnull)
+
+print("¡Descargado!")
