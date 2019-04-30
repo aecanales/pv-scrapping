@@ -36,4 +36,4 @@ print("Borrando archivos temporales...")
 
 scrapping.delete_temporary_directory()
 
-input('Listo! Apriete cualquier botón para cerrar.')
+input('Listo! Apriete ENTER para cerrar.')
