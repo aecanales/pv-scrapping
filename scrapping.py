@@ -27,12 +27,19 @@ def gather_links(soup: bs4.BeautifulSoup) -> list:
     return links
 
 def filter_links(links: list) -> list:
+    '''
+    Filtra la lista de enlaces retornando sólo los que corresponden a una archivo.
+    Es simple ahora pero se podria complejizar para descargar otros tipos de 
+    contenido como videos de Youtube o imágenes.
+    '''
     return [link for link in links if 'upload' in link]
 
 def create_temporary_directory():
+    ''' Crea un directorio temporal al cual descargar los archivos.'''
     os.mkdir('tmp')
 
 def download_files_to_temporary_directory(links: list):
+    ''' Descarga los archivos al directorio temporal usando wget. '''
     os.chdir('tmp')
 
     # Usar os.devnull nos permite usar el comando 'wget' sin que aparezca su output.
@@ -45,9 +52,11 @@ def download_files_to_temporary_directory(links: list):
     os.chdir('..')
 
 def zip_files(zip_name: str):
+    ''' Crea un ZIP de los archivos descargados. '''
     with zipfile.ZipFile(zip_name, 'w') as zip_file:
         for file in os.listdir('tmp'):
             zip_file.write(os.path.join('tmp', file), file)
 
 def delete_temporary_directory():
+    ''' Elimina el directorio temporal y todos los archivos que contiene. '''
     shutil.rmtree('tmp')
