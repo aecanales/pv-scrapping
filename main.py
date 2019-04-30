@@ -1,5 +1,6 @@
 # Escrito por Alonso Canales.
 # @aecanales - aecanales@uc.cl
+# https://github.com/aecanales/pv-scrapping
 
 import scrapping
 
@@ -20,7 +21,19 @@ links = scrapping.gather_links(soup)
 
 print("Filtrando enlaces...")
 
-links = scrapping.filter_links (links)
+links = scrapping.filter_links(links)
 
-for link in links:
-    print(link)
+print(f"{len(links)} archivos encontrados. Descargando...")
+
+scrapping.create_temporary_directory()
+scrapping.download_files_to_temporary_directory(links)
+
+print("Comprimiendo...")
+
+scrapping.zip_files(zip_name)
+
+print("Borrando archivos temporales...")
+
+scrapping.delete_temporary_directory()
+
+input('Listo! Apriete cualquier botón para cerrar.')

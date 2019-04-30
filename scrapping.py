@@ -1,13 +1,10 @@
 # Escrito por Alonso Canales.
 # @aecanales - aecanales@uc.cl
+# https://github.com/aecanales/pv-scrapping
 
-import urllib
-import bs4
-import re
-import os
-import subprocess
-import shutil
-import zipfile
+import os, re, shutil, subprocess, urllib, zipfile
+import bs4  # BeautifulSoup4
+
 
 def get_page_soup(website: str) -> bs4.BeautifulSoup:
     ''' Retorna un BeautifulSoup de la página web solicitada. '''
@@ -15,6 +12,11 @@ def get_page_soup(website: str) -> bs4.BeautifulSoup:
     return bs4.BeautifulSoup(html_page, features='html5lib')
 
 def gather_links(soup: bs4.BeautifulSoup) -> list:
+    ''' 
+    Recopila todos los enlances en el soup entregado.
+    Si detecta un enlace a la página anterior de la misma categoría, 
+    llama la función recursivamente para descargar los enlaces de esa página.
+    '''
     links = []
     for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
         links.append(link.get('href'))
@@ -27,11 +29,10 @@ def gather_links(soup: bs4.BeautifulSoup) -> list:
 def filter_links(links: list) -> list:
     return [link for link in links if 'upload' in link]
 
-if __name__ == "__main__":
-
-    print(f"{len(links)} archivos encontrados. Descargando...")
-
+def create_temporary_directory():
     os.mkdir('tmp')
+
+def download_files_to_temporary_directory(links: list):
     os.chdir('tmp')
 
     # Usar os.devnull nos permite usar el comando 'wget' sin que aparezca su output.
@@ -43,16 +44,10 @@ if __name__ == "__main__":
 
     os.chdir('..')
 
-    print("Comprimiendo...")
-
+def zip_files(zip_name: str):
     with zipfile.ZipFile(zip_name, 'w') as zip_file:
         for file in os.listdir('tmp'):
             zip_file.write(os.path.join('tmp', file), file)
 
-    print("Borrando archivos temporales...")
-
+def delete_temporary_directory():
     shutil.rmtree('tmp')
-
-    input('Listo! Apriete cualquier botón para cerrar.')
-
-
