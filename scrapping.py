@@ -9,53 +9,50 @@ import subprocess
 import shutil
 import zipfile
 
-WEBSITE = 'http://catalinacortazar.com/PensamientoVisual/?cat='
+def get_page_soup(website: str) -> bs4.BeautifulSoup:
+    ''' Retorna un BeautifulSoup de la página web solicitada. '''
+    html_page = urllib.request.urlopen(website)
+    return bs4.BeautifulSoup(html_page, features='html5lib')
 
-print("-" * 25 + "\n" + "DESCARGADOR TAREAS IDI1015" + "\n" + "-" * 25)
+def gather_links(soup: bs4.BeautifulSoup) -> list:
+    links = []
+    for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
+        links.append(link.get('href'))
 
-category = input("Indica la categoría de la tarea que deseas descargar.\n(Los dígitos en http://catalinacortazar.com/PensamientoVisual/?cat=XXX)\n")
-zip_name = input("Indica el nombre que deseas para el .zip.\n")
+        if 'Older' in link.get_text():
+            links.extend(gather_links(get_page_soup(link.get('href'))))
 
-print("Buscando página...")
+    return links
 
-html_page = urllib.request.urlopen("http://catalinacortazar.com/PensamientoVisual/?cat=" + category)
-soup =  bs4.BeautifulSoup(html_page, features='html5lib')
+def filter_links(links: list) -> list:
+    return [link for link in links if 'upload' in link]
 
-print("Recopilando enlaces...")
+if __name__ == "__main__":
 
-links = []
-for link in soup.findAll('a', attrs={'href': re.compile("^http://")}):
-    links.append(link.get('href'))
+    print(f"{len(links)} archivos encontrados. Descargando...")
 
-# Probalemente podria realizar el filtro en el comando previo pero no entiendo bien como funciona findAll :c
-print("Filtrando enlaces...")
+    os.mkdir('tmp')
+    os.chdir('tmp')
 
-links = [link for link in links if 'upload' in link]
+    # Usar os.devnull nos permite usar el comando 'wget' sin que aparezca su output.
+    # (en otras palabras, lo llamo sólo por razones estéticas)
+    with open(os.devnull, 'w') as devnull:
+        for link in links:
+            print(f" {link}")
+            subprocess.run(['wget', link], stdout=devnull, stderr=devnull)
 
-print(f"{len(links)} archivos encontrados. Descargando...")
+    os.chdir('..')
 
-os.mkdir('tmp')
-os.chdir('tmp')
+    print("Comprimiendo...")
 
-# Usar os.devnull nos permite usar el comando 'wget' sin que aparezca su output.
-# (en otras palabras, lo llamo sólo por razones estéticas)
-with open(os.devnull, 'w') as devnull:
-    for link in links:
-        print(f" {link}")
-        subprocess.run(['wget', link], stdout=devnull, stderr=devnull)
+    with zipfile.ZipFile(zip_name, 'w') as zip_file:
+        for file in os.listdir('tmp'):
+            zip_file.write(os.path.join('tmp', file), file)
 
-os.chdir('..')
+    print("Borrando archivos temporales...")
 
-print("Comprimiendo...")
+    shutil.rmtree('tmp')
 
-with zipfile.ZipFile(zip_name, 'w') as zip_file:
-    for file in os.listdir('tmp'):
-        zip_file.write(os.path.join('tmp', file), file)
-
-print("Borrando archivos temporales...")
-
-shutil.rmtree('tmp')
-
-input('Listo! Apriete cualquier botón para cerrar.')
+    input('Listo! Apriete cualquier botón para cerrar.')
 
 
