@@ -6,3 +6,4 @@ Para correrlo, baja ambos archivos ``.py`` y ejecuta ``main.py``. Te preguntará
 ## Ideas para el futuro
 * Poder descargar otros tipos de tareas (imágenes, enlaces a Youtube)
 * Dividir automáticamente en dos *.zip* por sección según la lista de alumnos.
+* Mostar el peso del archivo a descargar y el porcentaje de progreso de descarga.
